@@ -84,12 +84,12 @@ def end_to_end_score(imgfile, out_path):
                        draw_region,
                        score_region]
                  )
-
+    
 
 if __name__ == '__main__':
     in_path = './Team_Test/0_pics/'
     out_path = './Team_Test/'
-    imgfiles = [in_path + file for file in os.listdir(in_path) if 'Regular' in file]
+    imgfiles = [in_path + file for file in os.listdir(in_path) if 'TestImage' in file]
 
     for imgfile in imgfiles:
         outputdir = out_path + os.path.basename(imgfile).strip('.jpg')

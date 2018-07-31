@@ -15,15 +15,16 @@ import cv2
 
 TEMPLATE = cv2.imread('./Images/FindlandEmblem.jpg', cv2.IMREAD_GRAYSCALE)
 
-SCOREMAP = cv2.imread('./Images/FindlandEmblem_ScoreMap.png')  # in BGR mode
+SCOREMAP = cv2.imread('./Images/FindlandEmblem_ScoreMap.jpg')  # in BGR mode
 SCORECUT = (81, 85)
 
 # Positive score region is red (channel 2 = Red)
 POS_SCORE = numpy.where(SCOREMAP[..., 2] > 200, 0, 255).astype(numpy.uint8)
+TOTAL_POS = 66997
 
 # Negative score region is green (channel 1 = Red)
 NEG_SCORE = numpy.where(SCOREMAP[..., 1] > 200, 0, 255).astype(numpy.uint8)
-
+TOTAL_NEG = 299637
 
 def show_img(imgs, names=None, **kargs):
     if not isinstance(imgs, list):
@@ -294,14 +295,25 @@ def get_drawing(img):
 
 
 def get_score(img):
+    """Score = Positive Pixels - Negatvie Pixels,
+    with a min negative threshold and a maximum scaleer"""
     target = img.copy()
 
     target = get_drawing(target)
 
     pos = numpy.where(numpy.logical_and(target == 0, POS_SCORE == 0), 0, 255)
     neg = numpy.where(numpy.logical_and(target == 0, NEG_SCORE == 0), 0, 255)
-
-    score = numpy.count_nonzero(pos == 0) - numpy.count_nonzero(neg == 0)
+    
+    pos_count = numpy.count_nonzero(pos == 0)
+    neg_count = numpy.count_nonzero(neg == 0)
+    
+    # negative threshold
+    neg_count = 0 if neg_count < TOTAL_NEG/10 else neg_count - TOTAL_NEG/10
+    
+    # subsract negative pixels and scale with maximum scaler
+    score =  (pos_count - neg_count)/TOTAL_POS
+    score =  0 if score < 0 else score
+    
     return pos, neg, score
 
 
